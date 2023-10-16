@@ -1,6 +1,5 @@
-use iced::widget::{checkbox, column, container, row, svg, text, Column, Row, Rule, Text};
-use iced::Alignment;
-use iced::{color, theme, theme::Theme, Element, Length, Sandbox, Settings};
+use iced::widget::{column, container, row, svg, text, Column, Row, Rule};
+use iced::{color, theme, Alignment, Element, Length, Sandbox};
 
 pub fn main() -> iced::Result {
     let settings = iced::settings::Settings {
@@ -11,11 +10,11 @@ pub fn main() -> iced::Result {
         },
         ..Default::default()
     };
-    Tiger::run(settings)
+    Infonator::run(settings)
 }
 
 #[derive(Debug, Default)]
-struct Tiger {
+struct Infonator {
     apply_color_filter: bool,
 }
 
@@ -24,15 +23,15 @@ pub enum Message {
     ToggleColorFilter(bool),
 }
 
-impl Sandbox for Tiger {
+impl Sandbox for Infonator {
     type Message = Message;
 
     fn new() -> Self {
-        Tiger::default()
+        Infonator::default()
     }
 
-    fn theme(&self) -> Theme {
-        Theme::Dark
+    fn theme(&self) -> theme::Theme {
+        theme::Theme::Dark
     }
     fn title(&self) -> String {
         String::from("infonator")
