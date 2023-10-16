@@ -1,5 +1,5 @@
 use iced::widget::{column, container, row, svg, text, Column, Row, Rule};
-use iced::{color, theme, Alignment, Element, Length, Sandbox};
+use iced::{color, executor, theme, Alignment, Application, Command, Element, Length};
 
 pub fn main() -> iced::Result {
     let settings = iced::settings::Settings {
@@ -14,35 +14,53 @@ pub fn main() -> iced::Result {
 }
 
 #[derive(Debug, Default)]
-struct Infonator {
-    apply_color_filter: bool,
-}
+struct Infonator {}
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum Message {
-    ToggleColorFilter(bool),
+    EchoDone(Result<std::process::Output, String>),
 }
 
-impl Sandbox for Infonator {
+async fn run_external_command(
+    command_name: &str,
+    args: Vec<&str>,
+) -> Result<std::process::Output, String> {
+    match std::process::Command::new(command_name).args(args).output() {
+        Ok(v) => Ok(v),
+        Err(e) => Err(format!("{e}")),
+    }
+}
+
+impl Application for Infonator {
     type Message = Message;
+    type Theme = theme::Theme;
+    type Executor = executor::Default;
+    type Flags = ();
 
-    fn new() -> Self {
-        Infonator::default()
+    fn new(_flags: ()) -> (Self, Command<Message>) {
+        (
+            Self::default(),
+            Command::perform(run_external_command("sleep", ["3"].into()), |output| {
+                Message::EchoDone(output)
+            }),
+        )
     }
 
-    fn theme(&self) -> theme::Theme {
-        theme::Theme::Dark
-    }
     fn title(&self) -> String {
         String::from("infonator")
     }
 
-    fn update(&mut self, message: Self::Message) {
+    fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::ToggleColorFilter(apply_color_filter) => {
-                self.apply_color_filter = apply_color_filter;
+            Message::EchoDone(command) => {
+                println!("{command:?}");
+                Command::none()
             }
         }
+    }
+
+    fn theme(&self) -> theme::Theme {
+        theme::Theme::Dark
     }
 
     fn view(&self) -> Element<Self::Message> {
