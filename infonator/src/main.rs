@@ -69,8 +69,10 @@ impl Application for Infonator {
         let svg_larger_width = Length::Fixed(100.);
         let primary_spacing = 10.;
 
-        let wifi_svg_handle =
-            svg::Handle::from_path("/home/ask/kode/rust/infonator/assets/wifi-high.svg");
+        let wifi_svg_handle = svg::Handle::from_path(format!(
+            "{}/assets/wifi-high.svg",
+            env!("CARGO_MANIFEST_DIR")
+        ));
         let wifi_svg = svg(wifi_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
@@ -88,8 +90,10 @@ impl Application for Infonator {
             .push(wifi_svg)
             .push(wifi_text);
 
-        let battery_svg_handle =
-            svg::Handle::from_path("/home/ask/kode/rust/infonator/assets/battery-low.svg");
+        let battery_svg_handle = svg::Handle::from_path(format!(
+            "{}/assets/battery-low.svg",
+            env!("CARGO_MANIFEST_DIR")
+        ));
         let battery_svg = svg(battery_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
@@ -105,7 +109,7 @@ impl Application for Infonator {
             .push(battery_text);
 
         let time_svg_handle =
-            svg::Handle::from_path("/home/ask/kode/rust/infonator/assets/time.svg");
+            svg::Handle::from_path(format!("{}/assets/time.svg", env!("CARGO_MANIFEST_DIR")));
         let time_svg = svg(time_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
@@ -120,8 +124,10 @@ impl Application for Infonator {
             .push(time_svg)
             .push(time_text);
 
-        let volume_svg_handle =
-            svg::Handle::from_path("/home/ask/kode/rust/infonator/assets/volume-max.svg");
+        let volume_svg_handle = svg::Handle::from_path(format!(
+            "{}/assets/volume-max.svg",
+            env!("CARGO_MANIFEST_DIR")
+        ));
         let volume_svg = svg(volume_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
@@ -141,8 +147,10 @@ impl Application for Infonator {
         let svg_smaller_width = Length::Fixed(20.);
         let secondary_spacing = 6.;
 
-        let brightness_svg_handle =
-            svg::Handle::from_path("/home/ask/kode/rust/infonator/assets/brightness.svg");
+        let brightness_svg_handle = svg::Handle::from_path(format!(
+            "{}/assets/brightness.svg",
+            env!("CARGO_MANIFEST_DIR")
+        ));
         let brightness_svg = svg(brightness_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
@@ -156,7 +164,8 @@ impl Application for Infonator {
             .push(brightness_svg)
             .push(brightness_text);
 
-        let cpu_svg_handle = svg::Handle::from_path("/home/ask/kode/rust/infonator/assets/cpu.svg");
+        let cpu_svg_handle =
+            svg::Handle::from_path(format!("{}/assets/cpu.svg", env!("CARGO_MANIFEST_DIR")));
         let cpu_svg = svg(cpu_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
@@ -170,8 +179,10 @@ impl Application for Infonator {
             .push(cpu_svg)
             .push(cpu_text);
 
-        let date_svg_handle =
-            svg::Handle::from_path("/home/ask/kode/rust/infonator/assets/date.svg");
+        let date_svg_handle = svg::Handle::from_path(format!(
+            "{}/assets/battery-low.svg",
+            env!("CARGO_MANIFEST_DIR")
+        ));
         let date_svg = svg(date_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
@@ -185,7 +196,8 @@ impl Application for Infonator {
             .push(date_svg)
             .push(date_text);
 
-        let ram_svg_handle = svg::Handle::from_path("/home/ask/kode/rust/infonator/assets/ram.svg");
+        let ram_svg_handle =
+            svg::Handle::from_path(format!("{}/assets/ram.svg", env!("CARGO_MANIFEST_DIR")));
         let ram_svg = svg(ram_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
