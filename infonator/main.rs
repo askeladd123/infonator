@@ -18,7 +18,7 @@ struct Infonator {}
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    EchoDone(Result<std::process::Output, String>),
+    ExtCmdDone(Result<std::process::Output, String>),
 }
 
 async fn run_external_command(
@@ -41,7 +41,7 @@ impl Application for Infonator {
         (
             Self::default(),
             Command::perform(run_external_command("sleep", ["3"].into()), |output| {
-                Message::EchoDone(output)
+                Message::ExtCmdDone(output)
             }),
         )
     }
@@ -52,7 +52,7 @@ impl Application for Infonator {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::EchoDone(command) => {
+            Message::ExtCmdDone(command) => {
                 println!("{command:?}");
                 Command::none()
             }
