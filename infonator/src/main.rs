@@ -1,5 +1,9 @@
+use iced::keyboard::Event::KeyPressed;
 use iced::widget::{column, container, row, svg, text, Column, Row, Rule};
-use iced::{color, executor, theme, Alignment, Application, Command, Element, Length};
+use iced::{
+    color, executor, subscription, theme, window, Alignment, Application, Command, Element, Event,
+    Length, Subscription,
+};
 
 pub fn main() -> iced::Result {
     let settings = iced::settings::Settings {
@@ -19,6 +23,7 @@ struct Infonator {}
 #[derive(Debug, Clone)]
 pub enum Message {
     EchoDone(Result<std::process::Output, String>),
+    EventOccurred(Event),
 }
 
 async fn run_external_command(
@@ -56,11 +61,19 @@ impl Application for Infonator {
                 println!("{command:?}");
                 Command::none()
             }
+            Message::EventOccurred(event) => match event {
+                Event::Keyboard(KeyPressed { .. }) => window::close(),
+                _ => Command::none(),
+            },
         }
     }
 
     fn theme(&self) -> theme::Theme {
         theme::Theme::Dark
+    }
+
+    fn subscription(&self) -> Subscription<Message> {
+        subscription::events().map(Message::EventOccurred)
     }
 
     fn view(&self) -> Element<Self::Message> {
