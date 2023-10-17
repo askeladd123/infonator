@@ -58,8 +58,8 @@ fn main() {
                     match shared::extract_wifi_quality(
                         &String::from_utf8(output.stdout.clone()).unwrap(),
                     ) {
-                        Ok(_) => print_recognized_yes("wifi quality"),
-                        Err(e) => print_recognized_no("wifi quality"),
+                        Some(_) => print_recognized_yes("wifi quality"),
+                        None => print_recognized_no("wifi quality"),
                     }
                     settings.script_path_wifi_quality = path.into();
                     print_script_path_success_message("wifi quality", path, &output);
@@ -71,8 +71,8 @@ fn main() {
                     match shared::extract_battery_percentage(
                         &String::from_utf8(output.stdout.clone()).unwrap(),
                     ) {
-                        Ok(_) => print_recognized_yes("battery percentage"),
-                        Err(e) => print_recognized_no("battery percentage"),
+                        Some(_) => print_recognized_yes("battery percentage"),
+                        None => print_recognized_no("battery percentage"),
                     }
                     settings.script_path_battery_percentage = path.into();
                     print_script_path_success_message("battery percentage", path, &output);
@@ -89,8 +89,8 @@ fn main() {
             Some(("time", path)) => match shared::run_user_script(path) {
                 Ok(output) => {
                     match shared::extract_time(&String::from_utf8(output.stdout.clone()).unwrap()) {
-                        Ok(_) => print_recognized_yes("time"),
-                        Err(e) => print_recognized_no("time"),
+                        Some(_) => print_recognized_yes("time"),
+                        None => print_recognized_no("time"),
                     }
                     settings.script_path_time = path.into();
                     print_script_path_success_message("time", path, &output);
