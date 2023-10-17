@@ -179,10 +179,8 @@ impl Application for Infonator {
             .push(cpu_svg)
             .push(cpu_text);
 
-        let date_svg_handle = svg::Handle::from_path(format!(
-            "{}/assets/battery-low.svg",
-            env!("CARGO_MANIFEST_DIR")
-        ));
+        let date_svg_handle =
+            svg::Handle::from_path(format!("{}/assets/date.svg", env!("CARGO_MANIFEST_DIR")));
         let date_svg = svg(date_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
