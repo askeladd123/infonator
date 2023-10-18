@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-const SETTINGS_DIR: &str = "../";
+const DATA_DIR_NAME: &str = "infonator";
 
 #[derive(Serialize, Deserialize)]
 pub struct Settings {
@@ -48,13 +48,23 @@ impl Settings {
     pub fn save(&self) -> std::io::Result<()> {
         let json = serde_json::to_string_pretty(self)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-        let mut file = std::fs::File::create(PathBuf::from(SETTINGS_DIR).join("settings.json"))?;
+        let mut file = std::fs::File::create(
+            dirs::data_dir()
+                .unwrap()
+                .join(DATA_DIR_NAME)
+                .join("settings.json"),
+        )?;
         std::io::Write::write_all(&mut file, json.as_bytes())?;
         Ok(())
     }
 
     pub fn load() -> std::io::Result<Self> {
-        let file = std::fs::File::open(PathBuf::from(SETTINGS_DIR).join("settings.json"))?;
+        let file = std::fs::File::open(
+            dirs::data_dir()
+                .unwrap()
+                .join(DATA_DIR_NAME)
+                .join("settings.json"),
+        )?;
         let your_struct = serde_json::from_reader(file)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         Ok(your_struct)

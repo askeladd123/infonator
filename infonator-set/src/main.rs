@@ -42,18 +42,18 @@ fn main() {
 
     // test
     match matches.subcommand() {
-        Some(("script-path", sub)) => match sub
-            .subcommand()
-            .map(|(name, sub)| (name, sub.get_one::<std::path::PathBuf>("PATH").unwrap()))
-        {
-            Some(("wifi-name", path)) => match shared::run_user_script(path) {
+        Some(("script-path", sub)) => match sub.subcommand().map(|(name, sub)| {
+            let path = sub.get_one::<std::path::PathBuf>("PATH").unwrap();
+            (name, std::fs::canonicalize(path).unwrap())
+        }) {
+            Some(("wifi-name", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
-                    settings.script_path_wifi_name = path.into();
-                    print_script_path_success_message("wifi name", path, &output);
+                    settings.script_path_wifi_name = path.clone().into();
+                    print_script_path_success_message("wifi name", &path, &output);
                 }
                 Err(e) => todo!(),
             },
-            Some(("wifi-quality", path)) => match shared::run_user_script(path) {
+            Some(("wifi-quality", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
                     match shared::extract_wifi_quality(
                         &String::from_utf8(output.stdout.clone()).unwrap(),
@@ -61,12 +61,12 @@ fn main() {
                         Some(_) => print_recognized_yes("wifi quality"),
                         None => print_recognized_no("wifi quality"),
                     }
-                    settings.script_path_wifi_quality = path.into();
-                    print_script_path_success_message("wifi quality", path, &output);
+                    settings.script_path_wifi_quality = path.clone().into();
+                    print_script_path_success_message("wifi quality", &path, &output);
                 }
                 Err(e) => todo!(),
             },
-            Some(("battery-percentage", path)) => match shared::run_user_script(path) {
+            Some(("battery-percentage", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
                     match shared::extract_battery_percentage(
                         &String::from_utf8(output.stdout.clone()).unwrap(),
@@ -74,61 +74,61 @@ fn main() {
                         Some(_) => print_recognized_yes("battery percentage"),
                         None => print_recognized_no("battery percentage"),
                     }
-                    settings.script_path_battery_percentage = path.into();
-                    print_script_path_success_message("battery percentage", path, &output);
+                    settings.script_path_battery_percentage = path.clone().into();
+                    print_script_path_success_message("battery percentage", &path, &output);
                 }
                 Err(e) => todo!(),
             },
-            Some(("battery-time-left", path)) => match shared::run_user_script(path) {
+            Some(("battery-time-left", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
-                    settings.script_path_battery_time_left = path.into();
-                    print_script_path_success_message("battery, time left", path, &output);
+                    settings.script_path_battery_time_left = path.clone().into();
+                    print_script_path_success_message("battery, time left", &path, &output);
                 }
                 Err(e) => todo!(),
             },
-            Some(("time", path)) => match shared::run_user_script(path) {
+            Some(("time", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
                     match shared::extract_time(&String::from_utf8(output.stdout.clone()).unwrap()) {
                         Some(_) => print_recognized_yes("time"),
                         None => print_recognized_no("time"),
                     }
-                    settings.script_path_time = path.into();
-                    print_script_path_success_message("time", path, &output);
+                    settings.script_path_time = path.clone().into();
+                    print_script_path_success_message("time", &path, &output);
                 }
                 Err(e) => todo!(),
             },
-            Some(("volume", path)) => match shared::run_user_script(path) {
+            Some(("volume", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
-                    settings.script_path_volume = path.into();
-                    print_script_path_success_message("volume", path, &output);
+                    settings.script_path_volume = path.clone().into();
+                    print_script_path_success_message("volume", &path, &output);
                 }
                 Err(e) => todo!(),
             },
-            Some(("brightness", path)) => match shared::run_user_script(path) {
+            Some(("brightness", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
-                    settings.script_path_brightness = path.into();
-                    print_script_path_success_message("brightness", path, &output);
+                    settings.script_path_brightness = path.clone().into();
+                    print_script_path_success_message("brightness", &path, &output);
                 }
                 Err(e) => todo!(),
             },
-            Some(("date", path)) => match shared::run_user_script(path) {
+            Some(("date", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
-                    settings.script_path_date = path.into();
-                    print_script_path_success_message("date", path, &output);
+                    settings.script_path_date = path.clone().into();
+                    print_script_path_success_message("date", &path, &output);
                 }
                 Err(e) => todo!(),
             },
-            Some(("cpu-temperature", path)) => match shared::run_user_script(path) {
+            Some(("cpu-temperature", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
-                    settings.script_path_cpu_temperature = path.into();
-                    print_script_path_success_message("cpu temperature", path, &output);
+                    settings.script_path_cpu_temperature = path.clone().into();
+                    print_script_path_success_message("cpu temperature", &path, &output);
                 }
                 Err(e) => todo!(),
             },
-            Some(("ram-usage", path)) => match shared::run_user_script(path) {
+            Some(("ram-usage", path)) => match shared::run_user_script(&path) {
                 Ok(output) => {
-                    settings.script_path_ram_usage = path.into();
-                    print_script_path_success_message("ram usage", path, &output);
+                    settings.script_path_ram_usage = path.clone().into();
+                    print_script_path_success_message("ram usage", &path, &output);
                 }
                 Err(e) => todo!(),
             },
