@@ -1,5 +1,6 @@
 use iced::keyboard::Event::KeyPressed;
 use iced::widget::{column, container, row, svg, text, Column, Row, Rule};
+use iced::window::{Level, Position};
 use iced::{
     color, executor, subscription, theme, window, Alignment, Application, Command, Element, Event,
     Length, Subscription,
@@ -10,6 +11,9 @@ pub fn main() -> iced::Result {
         window: iced::window::Settings {
             size: (800, 400),
             transparent: true,
+            position: Position::Centered,
+            decorations: false,
+            level: Level::AlwaysOnTop,
             ..Default::default()
         },
         ..Default::default()
