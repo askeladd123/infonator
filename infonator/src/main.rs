@@ -17,20 +17,60 @@ pub fn main() -> iced::Result {
     Infonator::run(settings)
 }
 
-#[derive(Debug, Default)]
-struct Infonator {}
+#[derive(Debug)]
+struct Infonator {
+    wifi_name: String,
+    wifi_quality: String,
+    battery_percentage: String,
+    battery_time_left: String,
+    time: String,
+    volume: String,
+    brightness: String,
+    date: String,
+    cpu_temperature: String,
+    ram_usage: String,
+}
 
+#[rustfmt::skip]
+impl Default for Infonator {
+    fn default() -> Self {
+        Self {
+            wifi_name:          "...".into(),
+            wifi_quality:       "...".into(),
+            battery_percentage: "...".into(),
+            battery_time_left:  "...".into(),
+            time:               "...".into(),
+            volume:             "...".into(),
+            brightness:         "...".into(),
+            date:               "...".into(),
+            cpu_temperature:    "...".into(),
+            ram_usage:          "...".into(),
+        }
+    }
+}
+
+#[rustfmt::skip]
 #[derive(Debug, Clone)]
 pub enum Message {
-    EchoDone(Result<std::process::Output, String>),
+    CmdDoneWifiName         (Result<std::process::Output, String>),
+    CmdDoneWifiQuality      (Result<std::process::Output, String>),
+    CmdDoneBatteryPercentage(Result<std::process::Output, String>),
+    CmdDoneBatteryTimeLeft  (Result<std::process::Output, String>),
+    CmdDoneTime             (Result<std::process::Output, String>),
+    CmdDoneVolume           (Result<std::process::Output, String>),
+    CmdDoneBrightness       (Result<std::process::Output, String>),
+    CmdDoneDate             (Result<std::process::Output, String>),
+    CmdDoneCpuTemperature   (Result<std::process::Output, String>),
+    CmdDoneRamUsage         (Result<std::process::Output, String>),
     EventOccurred(Event),
 }
 
 async fn run_external_command(
-    command_name: &str,
-    args: Vec<&str>,
+    command_name: String,
+    args: Vec<String>,
 ) -> Result<std::process::Output, String> {
-    match std::process::Command::new(command_name).args(args).output() {
+    let path = std::path::PathBuf::from(command_name);
+    match shared::run_user_script(&path) {
         Ok(v) => Ok(v),
         Err(e) => Err(format!("{e}")),
     }
@@ -43,11 +83,123 @@ impl Application for Infonator {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
+        let settings = shared::Settings::load().unwrap_or_default();
         (
             Self::default(),
-            Command::perform(run_external_command("sleep", ["3"].into()), |output| {
-                Message::EchoDone(output)
-            }),
+            Command::batch([
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_wifi_name
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneWifiName(output),
+                ),
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_wifi_quality
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneWifiQuality(output),
+                ),
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_battery_percentage
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneBatteryPercentage(output),
+                ),
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_battery_time_left
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneBatteryTimeLeft(output),
+                ),
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_time
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneTime(output),
+                ),
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_volume
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneVolume(output),
+                ),
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_brightness
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneBrightness(output),
+                ),
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_date
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneDate(output),
+                ),
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_cpu_temperature
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneCpuTemperature(output),
+                ),
+                Command::perform(
+                    run_external_command(
+                        settings
+                            .script_path_ram_usage
+                            .into_os_string()
+                            .into_string()
+                            .unwrap(),
+                        [].into(),
+                    ),
+                    |output| Message::CmdDoneRamUsage(output),
+                ),
+            ]), // Command::perform(run_external_command("date", ["3"].into()), |output| {
+                //     Message::EchoDone(output)
+                // }),
         )
     }
 
@@ -57,13 +209,79 @@ impl Application for Infonator {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::EchoDone(command) => {
-                println!("{command:?}");
-                Command::none()
-            }
             Message::EventOccurred(event) => match event {
                 Event::Keyboard(KeyPressed { .. }) => window::close(),
                 _ => Command::none(),
+            },
+            Message::CmdDoneWifiName(output) => match output {
+                Ok(v) => {
+                    self.wifi_name = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
+            },
+            Message::CmdDoneWifiQuality(output) => match output {
+                Ok(v) => {
+                    self.wifi_quality = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
+            },
+            Message::CmdDoneBatteryPercentage(output) => match output {
+                Ok(v) => {
+                    self.battery_percentage = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
+            },
+            Message::CmdDoneBatteryTimeLeft(output) => match output {
+                Ok(v) => {
+                    self.battery_time_left = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
+            },
+            Message::CmdDoneTime(output) => match output {
+                Ok(v) => {
+                    self.time = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
+            },
+            Message::CmdDoneVolume(output) => match output {
+                Ok(v) => {
+                    self.volume = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
+            },
+            Message::CmdDoneBrightness(output) => match output {
+                Ok(v) => {
+                    self.brightness = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
+            },
+            Message::CmdDoneDate(output) => match output {
+                Ok(v) => {
+                    self.date = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
+            },
+            Message::CmdDoneCpuTemperature(output) => match output {
+                Ok(v) => {
+                    self.cpu_temperature = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
+            },
+            Message::CmdDoneRamUsage(output) => match output {
+                Ok(v) => {
+                    self.ram_usage = String::from_utf8(v.stdout).unwrap();
+                    Command::none()
+                }
+                Err(_) => Command::none(),
             },
         }
     }
@@ -94,8 +312,9 @@ impl Application for Infonator {
             .height(svg_larger_height);
 
         let wifi_text = Column::new()
-            .push(text("Storgaten48"))
-            .push(text("192.168.1.116"));
+            .push(text(self.wifi_name.clone()))
+            .push(text("192.168.1.116"))
+            .push(text(self.wifi_quality.clone()));
 
         let wifi = Row::new()
             .align_items(Alignment::Center)
@@ -113,7 +332,9 @@ impl Application for Infonator {
             }))
             .width(svg_larger_width)
             .height(svg_larger_height);
-        let battery_text = Column::new().push(text("51%")).push(text("5h left"));
+        let battery_text = Column::new()
+            .push(text(self.battery_percentage.clone()))
+            .push(text(self.battery_time_left.clone()));
 
         let battery = Row::new()
             .align_items(Alignment::Center)
@@ -129,7 +350,7 @@ impl Application for Infonator {
             }))
             .width(svg_larger_width)
             .height(svg_larger_height);
-        let time_text = Column::new().push(text("10:30"));
+        let time_text = Column::new().push(text(self.time.clone()));
 
         let time = Row::new()
             .align_items(Alignment::Center)
@@ -147,7 +368,7 @@ impl Application for Infonator {
             }))
             .width(svg_larger_width)
             .height(svg_larger_height);
-        let volume_text = Column::new().push(text("80%"));
+        let volume_text = Column::new().push(text(self.volume.clone()));
 
         let volume = Row::new()
             .align_items(Alignment::Center)
@@ -170,7 +391,7 @@ impl Application for Infonator {
             }))
             .width(svg_smaller_width)
             .height(svg_smaller_height);
-        let brightness_text = Column::new().push(text("90%"));
+        let brightness_text = Column::new().push(text(self.brightness.clone()));
         let brightness = Row::new()
             .align_items(Alignment::Center)
             .spacing(secondary_spacing)
@@ -185,24 +406,22 @@ impl Application for Infonator {
             }))
             .width(svg_smaller_width)
             .height(svg_smaller_height);
-        let cpu_text = Column::new().push(text("20°C"));
+        let cpu_text = Column::new().push(text(self.cpu_temperature.clone()));
         let cpu = Row::new()
             .align_items(Alignment::Center)
             .spacing(secondary_spacing)
             .push(cpu_svg)
             .push(cpu_text);
 
-        let date_svg_handle = svg::Handle::from_path(format!(
-            "{}/assets/battery-low.svg",
-            env!("CARGO_MANIFEST_DIR")
-        ));
+        let date_svg_handle =
+            svg::Handle::from_path(format!("{}/assets/date.svg", env!("CARGO_MANIFEST_DIR")));
         let date_svg = svg(date_svg_handle)
             .style(theme::Svg::custom_fn(|_theme| svg::Appearance {
                 color: Some(color!(150, 196, 255)),
             }))
             .width(svg_smaller_width)
             .height(svg_smaller_height);
-        let date_text = Column::new().push(text("10/9/2023"));
+        let date_text = Column::new().push(text(self.date.clone()));
         let date = Row::new()
             .align_items(Alignment::Center)
             .spacing(secondary_spacing)
@@ -217,7 +436,7 @@ impl Application for Infonator {
             }))
             .width(svg_smaller_width)
             .height(svg_smaller_height);
-        let ram_text = Column::new().push(text("15%"));
+        let ram_text = Column::new().push(text(self.ram_usage.clone()));
         let ram = Row::new()
             .align_items(Alignment::Center)
             .spacing(secondary_spacing)
