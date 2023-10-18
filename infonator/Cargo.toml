@@ -10,3 +10,4 @@ shared.path = "../shared"
 bytesize = "1.3.0"
 iced.version = "0.10.0"
 iced.features = ["svg", "system"]
+single-instance = "0.3.3"
