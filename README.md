@@ -1,32 +1,37 @@
 # infonator
-A program that simply displays a set of system information.
+A program that simply displays a set of useful information.
 
 I am making this program because I wanted to make a desktop environment without a status bar.
 > I'd rather have a large window showing all the information I need when I hold down a key, than a small bar covering the screen all the time
 
+![](./screenshot.jpg)
+
 **philosophy**
 1. fast startup time
-2. it is my job to display information, and the users job to aquire it through scripts
+2. fixable: gathering information is separeted into simple scripts, that can be fixed by the user
 3. good defaults: despite giving responsibilty to the user, it is still important to work well out of the box
 
-## configuration
-To configure the program and aquire system information, you will use the program `infonator-set` from the command line to set internal variables. This means you can configure the program from anywhere, with helpful feedback, and instead of learning yet another config file syntax, you can make a script in any language you want, and configure from there. To aquire system information, you pass an executable file that outputs corresponding information.
+## configure
+To configure you will use the command line program `infonator-set`. Here you can customize `infonator`, or specify the path to *info scripts* it will use to aquire information to displayed. Run `infonator-set help` to see what's available.
 
-This has advantages:
-- you can use a familiar language to configure, with for example syntax highlighting
-- takes the burden off developers to keep cross-platform compatibilty
-- it gives the user feedback after bad configuration
+## info scripts
+To aquire useful information, the program will run user info scripts set by `infonator-set`. Inside `example-config` you can find examples. These are platform dependent, and may not work. Tips:
+- install dependencies the scripts may require
+- check that you have installed the right command line interpreter, available: `bash`
 
-## information
-- primary
-  - wifi
-  - battery
-  - time
-  - volume
-- secondary
-  - ip address
-  - date
-  - brightness
-  - cpu temperature
-  - ram percentage
-- window manager: open windows?
+## run
+To diplay infonator window, simply run `infonator`. This ofcourse assumes you have it installed.
+
+## install
+> the program is not released anywhere yet
+
+## build from source
+To build from source, make sure you have *git* and the *rust toolchain* installed.
+
+#### build
+- `git clone <repo address>`
+- `cd infonator`
+- `cargo build --release`
+
+#### run
+You can find the two binaries in the folder `target`->`release`.
