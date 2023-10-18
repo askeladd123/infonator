@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 const DATA_DIR_NAME: &str = "infonator";
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Settings {
     // scripts for aquiring system information
     pub script_path_wifi_name: PathBuf,

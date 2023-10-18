@@ -1,12 +1,10 @@
-use std::time::Instant;
-
 use iced::keyboard::Event::KeyPressed;
 use iced::widget::{column, container, row, svg, text, Column, Row, Rule};
 use iced::window::Event::Unfocused;
 use iced::window::{Level, Position};
 use iced::{
-    color, executor, subscription, theme, window, Alignment, Application, Command, Element, Event,
-    Length, Subscription,
+    color, executor, subscription, theme, time, window, Alignment, Application, Command, Element,
+    Event, Length, Subscription,
 };
 use single_instance::SingleInstance;
 
@@ -31,7 +29,6 @@ pub fn main() -> iced::Result {
     Infonator::run(settings)
 }
 
-#[derive(Debug)]
 struct Infonator {
     wifi_name: String,
     wifi_quality: String,
@@ -44,7 +41,8 @@ struct Infonator {
     cpu_temperature: String,
     ram_usage: String,
     //
-    start: Instant,
+    start: iced::time::Instant,
+    settings: shared::Settings,
 }
 
 #[rustfmt::skip]
@@ -62,7 +60,8 @@ impl Default for Infonator {
             cpu_temperature:    "...".into(),
             ram_usage:          "...".into(),
             //
-            start: Instant::now(),
+            start: iced::time::Instant::now(),
+            settings: shared::Settings::load().unwrap_or_default(),
             
         }
     }
@@ -81,7 +80,9 @@ pub enum Message {
     CmdDoneDate             (Result<std::process::Output, String>),
     CmdDoneCpuTemperature   (Result<std::process::Output, String>),
     CmdDoneRamUsage         (Result<std::process::Output, String>),
+    //
     EventOccurred(Event),
+    Tick
 }
 
 async fn run_external_command(
@@ -102,124 +103,9 @@ impl Application for Infonator {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        let settings = shared::Settings::load().unwrap_or_default();
-        (
-            Self::default(),
-            Command::batch([
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_wifi_name
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneWifiName(output),
-                ),
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_wifi_quality
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneWifiQuality(output),
-                ),
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_battery_percentage
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneBatteryPercentage(output),
-                ),
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_battery_time_left
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneBatteryTimeLeft(output),
-                ),
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_time
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneTime(output),
-                ),
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_volume
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneVolume(output),
-                ),
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_brightness
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneBrightness(output),
-                ),
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_date
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneDate(output),
-                ),
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_cpu_temperature
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneCpuTemperature(output),
-                ),
-                Command::perform(
-                    run_external_command(
-                        settings
-                            .script_path_ram_usage
-                            .into_os_string()
-                            .into_string()
-                            .unwrap(),
-                        [].into(),
-                    ),
-                    |output| Message::CmdDoneRamUsage(output),
-                ),
-            ]), // Command::perform(run_external_command("date", ["3"].into()), |output| {
-                //     Message::EchoDone(output)
-                // }),
-        )
+        let infonator = Self::default();
+        let settings = infonator.settings.clone();
+        (infonator, user_script_batch_command(settings))
     }
 
     fn title(&self) -> String {
@@ -239,6 +125,7 @@ impl Application for Infonator {
                     _ => Command::none(),
                 }
             }
+            Message::Tick => user_script_batch_command(self.settings.clone()),
             Message::CmdDoneWifiName(output) => match output {
                 Ok(v) => {
                     self.wifi_name = String::from_utf8(v.stdout).unwrap();
@@ -317,7 +204,10 @@ impl Application for Infonator {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        subscription::events().map(Message::EventOccurred)
+        Subscription::batch([
+            subscription::events().map(Message::EventOccurred),
+            time::every(iced::time::Duration::from_secs(1)).map(|_| Message::Tick),
+        ])
     }
 
     fn view(&self) -> Element<Self::Message> {
@@ -487,4 +377,119 @@ impl Application for Infonator {
         .height(Length::Fill)
         .into()
     }
+}
+
+fn user_script_batch_command(settings: shared::Settings) -> Command<Message> {
+    Command::batch([
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_wifi_name
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneWifiName(output),
+        ),
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_wifi_quality
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneWifiQuality(output),
+        ),
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_battery_percentage
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneBatteryPercentage(output),
+        ),
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_battery_time_left
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneBatteryTimeLeft(output),
+        ),
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_time
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneTime(output),
+        ),
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_volume
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneVolume(output),
+        ),
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_brightness
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneBrightness(output),
+        ),
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_date
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneDate(output),
+        ),
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_cpu_temperature
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneCpuTemperature(output),
+        ),
+        Command::perform(
+            run_external_command(
+                settings
+                    .script_path_ram_usage
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+                [].into(),
+            ),
+            |output| Message::CmdDoneRamUsage(output),
+        ),
+    ])
 }
