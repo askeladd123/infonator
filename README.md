@@ -10,7 +10,7 @@ I am making this program because I wanted to make a desktop environment without 
 3. good defaults: despite giving responsibilty to the user, it is still important to work well out of the box
 
 ## configuration
-To configure the program and aquire system information, you will use the program `infonator-set` from the command line to set internal variables. This means you can configure the program from anywhere, with helpful feedback, and instead of learning yet another config file syntax, you can make a script in any language you want, and configure from there. To aquire system information, you pass and executable file that outputs corresponding information.
+To configure the program and aquire system information, you will use the program `infonator-set` from the command line to set internal variables. This means you can configure the program from anywhere, with helpful feedback, and instead of learning yet another config file syntax, you can make a script in any language you want, and configure from there. To aquire system information, you pass an executable file that outputs corresponding information.
 
 This has advantages:
 - you can use a familiar language to configure, with for example syntax highlighting
