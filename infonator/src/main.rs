@@ -7,8 +7,15 @@ use iced::{
     color, executor, subscription, theme, window, Alignment, Application, Command, Element, Event,
     Length, Subscription,
 };
+use single_instance::SingleInstance;
 
 pub fn main() -> iced::Result {
+    let instance = SingleInstance::new("infonator").unwrap();
+    if !instance.is_single() {
+        println!("Application is already running.");
+        std::process::exit(1);
+    }
+
     let settings = iced::settings::Settings {
         window: iced::window::Settings {
             size: (800, 400),
