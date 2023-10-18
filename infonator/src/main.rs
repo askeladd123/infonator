@@ -1,12 +1,22 @@
+use std::time::Instant;
+
 use iced::keyboard::Event::KeyPressed;
 use iced::widget::{column, container, row, svg, text, Column, Row, Rule};
+use iced::window::Event::Unfocused;
 use iced::window::{Level, Position};
 use iced::{
     color, executor, subscription, theme, window, Alignment, Application, Command, Element, Event,
     Length, Subscription,
 };
+use single_instance::SingleInstance;
 
 pub fn main() -> iced::Result {
+    let instance = SingleInstance::new("infonator").unwrap();
+    if !instance.is_single() {
+        println!("Application is already running.");
+        std::process::exit(1);
+    }
+
     let settings = iced::settings::Settings {
         window: iced::window::Settings {
             size: (800, 400),
@@ -33,6 +43,8 @@ struct Infonator {
     date: String,
     cpu_temperature: String,
     ram_usage: String,
+    //
+    start: Instant,
 }
 
 #[rustfmt::skip]
@@ -49,6 +61,9 @@ impl Default for Infonator {
             date:               "...".into(),
             cpu_temperature:    "...".into(),
             ram_usage:          "...".into(),
+            //
+            start: Instant::now(),
+            
         }
     }
 }
@@ -213,10 +228,17 @@ impl Application for Infonator {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::EventOccurred(event) => match event {
-                Event::Keyboard(KeyPressed { .. }) => window::close(),
-                _ => Command::none(),
-            },
+            Message::EventOccurred(event) => {
+                if self.start.elapsed().as_millis() < 500 {
+                    return Command::none();
+                }
+                match event {
+                    Event::Keyboard(KeyPressed { .. }) | Event::Window(Unfocused) => {
+                        window::close()
+                    }
+                    _ => Command::none(),
+                }
+            }
             Message::CmdDoneWifiName(output) => match output {
                 Ok(v) => {
                     self.wifi_name = String::from_utf8(v.stdout).unwrap();
