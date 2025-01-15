@@ -1,0 +1,1 @@
+- faster startup: run in background, start with IPC
