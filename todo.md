@@ -1,1 +1,11 @@
-- faster startup: run in background, start with IPC
+- add back `Cargo.lock`
+- rewrite:
+  - server-client: run in background, start with IPC message
+    - will be much faster
+    - no longer important to minimize binary size
+  - scrap scripts: use rust libraries
+    - you will find what you need to get time info, hardware and much more
+    - binary will be larger, but this is now ok
+    - no user wants to fix scripts
+  - configuration: use files
+    - easier to implement and maintain
